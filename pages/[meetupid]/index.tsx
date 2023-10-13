@@ -1,5 +1,7 @@
 import MeetupDetail from "@/components/meetups/MeetupDetail";
+import { GetStaticProps } from "next";
 import React from "react";
+import { MongoClient } from "mongodb";
 
 export default function MeetupDetailsPage() {
   return (
@@ -12,7 +14,12 @@ export default function MeetupDetailsPage() {
   );
 }
 
-export async function getStaticProps(){
+export const getStaticProps: GetStaticProps = async (context) => {
+
+  const meetupId = context.params?.meetupId;
+
+  console.log(meetupId)
+
   return {
     props: {
       meetupData: {
@@ -24,5 +31,34 @@ export async function getStaticProps(){
       }
     },
     revalidate: 10
+  }
+}
+
+export async function getStaticPaths(){
+  const client = await MongoClient.connect(
+    "mongodb+srv://julio:borden16@testing.zvaswda.mongodb.net/meetups?retryWrites=true&w=majority"
+  );
+  const db = client.db();
+
+  const meetupsCollection = db.collection("meetups");
+
+  const meetups = await meetupsCollection.find().toArray();
+  
+
+  client.close();
+  return {
+    fallback: false,
+    paths: [
+      {
+        params: {
+          meetupid: 'm1'
+        },
+      },
+      // {
+      //   params: {
+      //     meetupid: 'm2'
+      //   },
+      // }
+    ]
   }
 }
